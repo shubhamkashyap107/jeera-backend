@@ -163,7 +163,7 @@ Relationship:
   createdBy, // Owner's User._id
   isActive,
   createdAt,
-  updatedAt
+  updatedAt,
 }
 ```
 

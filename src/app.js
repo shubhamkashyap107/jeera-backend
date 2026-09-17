@@ -2,9 +2,10 @@ require("dotenv").config()
 const express = require("express")
 const mongoose = require("mongoose")
 const { AuthRouter } = require("./Routes/auth.routes")
+const { OwnerRouter } = require("./Routes/owner.routes")
 const cors = require("cors")
 const cp = require("cookie-parser")
-// const { addOwner } = require("./Utils/AddOwner")
+// const { addUser } = require("./Utils/AddOwner")
 
 const app = express()
 
@@ -14,11 +15,13 @@ app.use(cors({
 app.use(cp())
 app.use(express.json())
 app.use("/api/auth", AuthRouter)
+app.use("/api/owner", OwnerRouter)
 
 
 
 mongoose.connect(process.env.DB_URL)
 .then(() => {
+    // addUser("Testing123!", "DemoUser", "demo@something.com", "admin")
     console.log("Database connected")
 
     const port = process.env.PORT || 8080
