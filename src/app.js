@@ -39,7 +39,7 @@ mongoose.connect(process.env.DB_URL)
 
 
 app.use((err, req, res, next) => {
-    console.log(err)
+    // console.log(err)
     res
     .status(err.status || 400)
     .json({

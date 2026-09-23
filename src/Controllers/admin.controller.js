@@ -4,6 +4,7 @@ const { AppError } = require("../Utils/AppError")
 const { User } = require("../Models/User.schema")
 const bcrypt = require("bcrypt")
 const validator = require("validator")
+const { Task } = require("../Models/Task.schema")
 
 
 const addTeam = async(req, res) => {
@@ -292,6 +293,211 @@ const updateEmployee = async(req, res) => {
 }
 
 
+const createTask = async (req, res) => {
+
+    const{ employeeId } = req.params
+
+    if(!mongoose.Types.ObjectId.isValid(employeeId))
+    {
+        throw new AppError(400, "Invalid ID")
+    }
+
+    const foundEmployee = await User.findOne({
+        _id : employeeId,
+        organizationId : req.user.organizationId._id
+    })
+
+    if(!foundEmployee)
+    {
+        throw new AppError(404, "Employee does not exists")
+    }
+
+    const{title, description, status, priority } = req.body
+
+    if(!title || !title.trim() || title.trim().length > 100)
+    {
+        throw new AppError(400, "Invalid title")
+    }
+
+
+    if(!description || !description.trim() || description.trim().length > 300)
+    {
+        throw new AppError(400, "Invalid description")
+    }
+
+
+    if(!status || !status.trim() || !["todo", "in-progress", "completed"].includes(status.trim()))
+    {
+        throw new AppError(400, "Invalid status")
+    }
+
+
+    if(!priority || !priority.trim() || !["low", "medium", "high"].includes(priority.trim()))
+    {
+        throw new AppError(400, "Invalid priority")
+    }
+
+
+    const createdTask = await Task.create({
+        title, 
+        description,
+        status, 
+        priority,
+        organizationId : req.user.organizationId._id,
+        teamId : foundEmployee.teamdId,
+        assignedTo : employeeId,
+        createdBy : req.user._id
+    })
+    
+    res
+    .status(201)
+    .json({
+        message : "Task created",
+        data : createdTask
+    })
+
+
+}
+
+const getAllTasks = async(req, res) => {
+
+
+    const allTasks = await Task.find({
+        organizationId : req.user.organizationId._id
+    })
+
+    res
+    .status(200)
+    .json({
+        data : allTasks
+    })
+}
+
+
+const getTaskById = async(req, res) => {
+    const { taskId } = req.params
+
+    if(!mongoose.Types.ObjectId.isValid(taskId))
+    {
+        throw new AppError(400, "Invalid ID")
+    }
+
+    const foundTask = await Task.findOne({
+        _id : taskId,
+        organizationId : req.user.organizationId._id
+    })
+
+
+    res
+    .status(200)
+    .json({
+        data : foundTask
+    })
+
+    
+
+}
+
+
+const deleteTask = async(req, res) => {
+
+    const { taskId } = req.params
+
+    if(!mongoose.Types.ObjectId.isValid(taskId))
+    {
+        throw new AppError(400, "Invalid ID")
+    }
+
+    const data = await Task.findOneAndDelete({
+        _id : taskId,
+        organizationId : req.user.organizationId._id
+    })
+
+    console.log(data)
+
+    res
+    .status(200)
+    .json({
+        message : "Done"
+    })
+
+}
+
+
+const updateTask = async(req, res) => {
+
+    const { taskId } = req.params
+
+    if(!mongoose.Types.ObjectId.isValid(taskId))
+    {
+        throw new AppError(400, "Invalid ID")
+    }
+
+    const{title, description, status, priority, teamId, assignedTo} = req.body
+
+    if(!title || !title.trim() || title.trim().length > 100)
+    {
+        throw new AppError(400, "Invalid title")
+    }
+
+
+    if(!description || !description.trim() || description.trim().length > 300)
+    {
+        throw new AppError(400, "Invalid description")
+    }
+
+
+    if(!status || !status.trim() || !["todo", "in-progress", "completed"].includes(status.trim()))
+    {
+        throw new AppError(400, "Invalid status")
+    }
+
+
+    if(!priority || !priority.trim() || !["low", "medium", "high"].includes(priority.trim()))
+    {
+        throw new AppError(400, "Invalid priority")
+    }
+
+
+    if(!teamId || !mongoose.Types.ObjectId.isValid(teamId))
+    {
+        throw new AppError(400, "Invalid TeamId")
+    }
+
+
+    if(!assignedTo || !mongoose.Types.ObjectId.isValid(assignedTo))
+    {
+        throw new AppError(400, "Invalid EmployeeId")
+    }
+
+
+    const updatedTask = await Task.findOneAndUpdate({
+        _id : taskId,
+        organizationId : req.user.organizationId._id
+    }, {
+        title,
+        description,
+        status,
+        priority,
+        teamId,
+        assignedTo
+    }, {
+        runValidators : true,
+        returnDocument : "after"
+    })
+
+
+    res
+    .status(200)
+    .json({
+        message : "Task updated",
+        data : updateTask
+    })
+
+}
+
+
+
 module.exports = {
     addTeam, 
     getAllTeams,
@@ -301,5 +507,10 @@ module.exports = {
     createEmployee,
     getAllEmployeesByTeamId,
     deleteEmployee,
-    updateEmployee
+    updateEmployee,
+    createTask,
+    getAllTasks,
+    getTaskById,
+    deleteTask,
+    updateTask
 }

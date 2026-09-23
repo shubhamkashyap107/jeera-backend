@@ -1,7 +1,7 @@
 const express = require("express")
 const router = express.Router()
 const{ authorize, isLoggedIn, isOrganizationActive} = require("../Middlewares/index")
-const { addTeam, getAllTeams, getTeamById, deleteTeam, updateTeam, createEmployee, getAllEmployeesByTeamId, updateEmployee, deleteEmployee } = require("../Controllers/admin.controller")
+const { deleteTask, getTaskById, getAllTasks, addTeam, getAllTeams, getTeamById, deleteTeam, updateTeam, createEmployee, getAllEmployeesByTeamId, updateEmployee, deleteEmployee, createTask, updateTask } = require("../Controllers/admin.controller")
 
 router.post(
     "/teams", 
@@ -108,6 +108,56 @@ router.delete(
     authorize("admin"),
     deleteEmployee
 )
+
+/*
+    - Admin's Task APIs
+*/
+
+
+router.post(
+    "/tasks/employee/:employeeId",
+    isLoggedIn,
+    isOrganizationActive,
+    authorize("admin"),
+    createTask
+)
+
+router.get(
+    "/tasks",
+    isLoggedIn,
+    isOrganizationActive,
+    authorize("admin"),
+    getAllTasks
+)
+
+
+router.get(
+    "/tasks/:taskId",
+    isLoggedIn,
+    isOrganizationActive,
+    authorize("admin"),
+    getTaskById
+)
+
+
+
+router.delete(
+    "/tasks/:taskId",
+    isLoggedIn,
+    isOrganizationActive,
+    authorize("admin"),
+    deleteTask
+)
+
+
+router.patch(
+    "/tasks/:taskId",
+    isLoggedIn,
+    isOrganizationActive,
+    authorize("admin"),
+    updateTask
+)
+
 
 
 
