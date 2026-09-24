@@ -161,7 +161,7 @@ const createEmployee = async(req, res) => {
 
     const{ name, password, email } = req.body
 
-    if(!name.trim() || name.trim().length > 20 || name.trim().length < 2)
+    if(!name || !name.trim() || name.trim().length > 20 || name.trim().length < 2)
     {
         throw new AppError(400, "Invalid name")
     }
@@ -430,10 +430,10 @@ const updateTask = async(req, res) => {
 
     if(!mongoose.Types.ObjectId.isValid(taskId))
     {
-        throw new AppError(400, "Invalid ID")
+        throw new AppError(400, "Invalid Task ID")
     }
 
-    const{title, description, status, priority, teamId, assignedTo} = req.body
+    const{title, description, status, priority, assignedTo} = req.body
 
     if(!title || !title.trim() || title.trim().length > 100)
     {
@@ -470,6 +470,13 @@ const updateTask = async(req, res) => {
         throw new AppError(400, "Invalid EmployeeId")
     }
 
+    const foundEmployee = await User.findById(assignedTo)
+
+    if(!foundEmployee)
+    {
+        throw new AppError(404, "User not found")
+    }
+
 
     const updatedTask = await Task.findOneAndUpdate({
         _id : taskId,
@@ -479,19 +486,23 @@ const updateTask = async(req, res) => {
         description,
         status,
         priority,
-        teamId,
+        teamId : foundEmployee.teamdId,
         assignedTo
     }, {
         runValidators : true,
         returnDocument : "after"
     })
 
+    if(!updatedTask)
+    {
+        throw new AppError(404, "Task not found")
+    }
 
     res
     .status(200)
     .json({
         message : "Task updated",
-        data : updateTask
+        data : updatedTask
     })
 
 }

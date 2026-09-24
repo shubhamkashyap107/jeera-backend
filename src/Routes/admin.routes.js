@@ -71,23 +71,23 @@ router.get(
 
 
 
-router.get(
-    "/teams/:teamId/employees",
-    isLoggedIn,
-    isOrganizationActive,
-    authorize("admin"),
-    getAllEmployeesByTeamId
-)
+// router.get(
+//     "/teams/:teamId/employees",
+//     isLoggedIn,
+//     isOrganizationActive,
+//     authorize("admin"),
+//     getAllEmployeesByTeamId
+// )
 
 
 
-router.get(
-    "/teams/:teamId/employees",
-    isLoggedIn,
-    isOrganizationActive,
-    authorize("admin"),
-    getAllEmployeesByTeamId
-)
+// router.get(
+//     "/teams/:teamId/employees",
+//     isLoggedIn,
+//     isOrganizationActive,
+//     authorize("admin"),
+//     getAllEmployeesByTeamId
+// )
 
 
 
