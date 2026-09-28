@@ -47,6 +47,8 @@ const getAllOrgs = async(req, res) => {
     })
 }
 
+
+
 const getOrgsById =  async(req, res) => {
     const{ id } = req.params
 

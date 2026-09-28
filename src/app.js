@@ -5,6 +5,7 @@ const { AuthRouter } = require("./Routes/auth.routes")
 const { OwnerRouter } = require("./Routes/owner.routes")
 const { AdminRouter } = require("./Routes/admin.routes")
 const { EmployeeRouter } = require("./Routes/employee.routes")
+const { AnalyticsRouter } = require("./Routes/analytics.routes")
 const cors = require("cors")
 const cp = require("cookie-parser")
 // const { addUser } = require("./Utils/AddOwner")
@@ -12,6 +13,7 @@ const cp = require("cookie-parser")
 const app = express()
 
 app.use(cors({
+    origin : ["deployedUrl", "http://localhost:5173"],
     credentials : true // allowing browser to request cookies
 }))
 
@@ -21,6 +23,7 @@ app.use("/api/auth", AuthRouter)
 app.use("/api/owner", OwnerRouter)
 app.use("/api/admin", AdminRouter)
 app.use("/api/employee", EmployeeRouter)
+app.use("/api/analytics", AnalyticsRouter)
 
 
 
