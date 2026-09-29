@@ -44,14 +44,35 @@ mongoose.connect(process.env.DB_URL)
 
 
 
+// Registered synchronously at startup, so it runs after every router above.
+// Express 5 forwards errors thrown in async handlers here automatically.
 app.use((err, req, res, next) => {
-    // console.log(err)
+
+    let status = err.status || 400
+    let message = err.message
+
+    if(err.code == 11000)
+    {
+        const field = Object.keys(err.keyValue || {})[0] || "value"
+        status = 409
+        message = `${field} already exists`
+    }
+    else if(err.name == "JsonWebTokenError" || err.name == "TokenExpiredError")
+    {
+        status = 401
+        message = "Session expired, please log in again"
+    }
+    else if(err.name == "CastError")
+    {
+        status = 400
+        message = "Invalid ID"
+    }
+
     res
-    .status(err.status || 400)
+    .status(status)
     .json({
-        message : err.message
+        message
     })
 })
-// will my error not be stuck on the upper app.use()?
 
 

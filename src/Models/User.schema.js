@@ -50,7 +50,14 @@ const UserSchema = new mongoose.Schema({
     }
 
 }, {
-    timestamps : true
+    timestamps : true,
+    toJSON : {
+        // never send password hashes to the client
+        transform : (doc, ret) => {
+            delete ret.password
+            return ret
+        }
+    }
 })
 
 

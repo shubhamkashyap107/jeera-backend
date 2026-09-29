@@ -1,14 +1,20 @@
-const { default: mongoose } = require("mongoose")
+const mongoose = require("mongoose")
 const { Task } = require("../Models/Task.schema")
 const { AppError } = require("../Utils/AppError")
+
+const populateTask = (query) => {
+    return query
+    .populate("teamId", "name")
+    .populate("createdBy", "name")
+}
 
 const getAllTasks = async(req, res) => {
     
     const id = req.user._id
 
-    const allTasks = await Task.find({
+    const allTasks = await populateTask(Task.find({
         assignedTo : id
-    })
+    })).sort({createdAt : -1})
 
     res
     .status(200)
@@ -28,10 +34,10 @@ const getTaskById = async(req, res) => {
         throw new AppError(400, "Invalid Task ID")
     }
 
-    const data = await Task.findOne({
+    const data = await populateTask(Task.findOne({
         _id : taskId,
         assignedTo : req.user._id
-    })
+    }))
 
     if(!data)
     {
@@ -62,7 +68,7 @@ const updateTaskEmployee = async(req, res) => {
         throw new AppError(400, "Invalid Status")
     }
 
-    const data = await Task.findOneAndUpdate({
+    const data = await populateTask(Task.findOneAndUpdate({
         _id : taskId,
         assignedTo : req.user._id
     }, {
@@ -70,7 +76,7 @@ const updateTaskEmployee = async(req, res) => {
     },{
         runValidators : true,
         returnDocument : "after"
-    })
+    }))
 
 
     if(!data){throw new AppError(404, "Task not found")}
