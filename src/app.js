@@ -6,11 +6,18 @@ const { OwnerRouter } = require("./Routes/owner.routes")
 const { AdminRouter } = require("./Routes/admin.routes")
 const { EmployeeRouter } = require("./Routes/employee.routes")
 const { AnalyticsRouter } = require("./Routes/analytics.routes")
+const { ChatRouter } = require("./Routes/chats.routes")
 const cors = require("cors")
 const cp = require("cookie-parser")
+const http = require("http")
+const { Server } = require("socket.io")
+
 // const { addUser } = require("./Utils/AddOwner")
 
 const app = express()
+const server = http.createServer(app)
+
+
 
 app.use(cors({
     origin : ["deployedUrl", "http://localhost:5173"],
@@ -24,6 +31,7 @@ app.use("/api/owner", OwnerRouter)
 app.use("/api/admin", AdminRouter)
 app.use("/api/employee", EmployeeRouter)
 app.use("/api/analytics", AnalyticsRouter)
+app.use("/api/chats", ChatRouter)
 
 
 
@@ -34,7 +42,7 @@ mongoose.connect(process.env.DB_URL)
 
     const port = process.env.PORT || 8080
 
-    app.listen(port, () => {
+    server.listen(port, () => {
         console.log(`Server Running on port ${port}`)
     })
 })
@@ -76,3 +84,23 @@ app.use((err, req, res, next) => {
 })
 
 
+
+
+
+const io = new Server(server, {
+    cors : {
+        origin : ["http://localhost:5173"],
+        methods : ["GET", "POST"]
+    }
+})
+
+
+io.on("connection", (socket) => {
+    console.log("User connected")
+
+    socket.on("disconnect", () => {
+        console.log("Socket disconnected")
+    })
+
+
+})
