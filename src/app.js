@@ -11,11 +11,49 @@ const cors = require("cors")
 const cp = require("cookie-parser")
 const http = require("http")
 const { Server } = require("socket.io")
+const { Chat } = require("./Models/Chat.Schema")
 
 // const { addUser } = require("./Utils/AddOwner")
 
 const app = express()
 const server = http.createServer(app)
+
+
+
+const io = new Server(server, {
+    cors : {
+        origin : ["http://localhost:5173"]
+    }
+})
+
+io.on("connection", (socket) => {
+    // console.log("Socket connected")
+
+
+    socket.on("join-room", (data) => {
+        let roomId = [data.sender, data.receiver].sort().join("")
+        socket.join(roomId)
+    })
+
+    socket.on("send-msg", async(data) => {
+        
+        // let roomId = [data.sender, data.receiver].sort().join("")
+        // socket.join(roomId)
+        let roomId = [data.sender, data.receiver].sort().join("")
+        io.to(roomId).emit("rec-msg", data)
+
+        await Chat.create({
+            text : data.msg,
+            sender : data.sender,
+            receiver : data.receiver
+        })
+
+
+    })
+
+
+})
+
 
 
 
@@ -86,21 +124,3 @@ app.use((err, req, res, next) => {
 
 
 
-
-const io = new Server(server, {
-    cors : {
-        origin : ["http://localhost:5173"],
-        methods : ["GET", "POST"]
-    }
-})
-
-
-io.on("connection", (socket) => {
-    console.log("User connected")
-
-    socket.on("disconnect", () => {
-        console.log("Socket disconnected")
-    })
-
-
-})

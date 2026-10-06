@@ -1,6 +1,6 @@
 const express = require("express")
 const { isLoggedIn, authorize, isOrganizationActive } = require("../Middlewares")
-const { getChatsInfo } = require("../Controllers/chatsController")
+const { getChatsInfo, getChats } = require("../Controllers/chatsController")
 const router = express.Router()
 
 router.get(
@@ -9,6 +9,14 @@ router.get(
     isOrganizationActive,
     authorize("admin", "employee"),
     getChatsInfo
+)
+
+router.get(
+    "/:id",
+    isLoggedIn,
+    isOrganizationActive,
+    authorize("admin", "employee"),
+    getChats
 )
 
 
