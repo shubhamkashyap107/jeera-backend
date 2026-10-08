@@ -18,7 +18,9 @@ const ChatSchema = new mongoose.Schema({
         required : true,
         ref : "User"
     }
-})
+}, {timestamps : true})
+
+ChatSchema.index({ sender : 1, receiver : 1 })
 
 const Chat = mongoose.model("Chat", ChatSchema)
 

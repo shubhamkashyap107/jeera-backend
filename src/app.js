@@ -10,55 +10,34 @@ const { ChatRouter } = require("./Routes/chats.routes")
 const cors = require("cors")
 const cp = require("cookie-parser")
 const http = require("http")
-const { Server } = require("socket.io")
-const { Chat } = require("./Models/Chat.Schema")
+const { initSocket } = require("./socket")
 
 // const { addUser } = require("./Utils/AddOwner")
+
+const missingEnv = ["DB_URL", "JWT_SECRET", "CLIENT_URL"].filter((key) => !process.env[key])
+if(missingEnv.length)
+{
+    console.log(`Missing environment variables : ${missingEnv.join(", ")}`)
+    process.exit(1)
+}
+
+// comma separated list, e.g. "https://jeera.onrender.com,http://localhost:5173"
+const allowedOrigins = process.env.CLIENT_URL
+.split(",")
+.map((origin) => origin.trim().replace(/\/+$/, ""))
+.filter(Boolean)
 
 const app = express()
 const server = http.createServer(app)
 
+// Render terminates HTTPS at its proxy; this makes req.secure true so secure cookies work
+app.set("trust proxy", 1)
 
-
-const io = new Server(server, {
-    cors : {
-        origin : ["http://localhost:5173"]
-    }
-})
-
-io.on("connection", (socket) => {
-    // console.log("Socket connected")
-
-
-    socket.on("join-room", (data) => {
-        let roomId = [data.sender, data.receiver].sort().join("")
-        socket.join(roomId)
-    })
-
-    socket.on("send-msg", async(data) => {
-        
-        // let roomId = [data.sender, data.receiver].sort().join("")
-        // socket.join(roomId)
-        let roomId = [data.sender, data.receiver].sort().join("")
-        io.to(roomId).emit("rec-msg", data)
-
-        await Chat.create({
-            text : data.msg,
-            sender : data.sender,
-            receiver : data.receiver
-        })
-
-
-    })
-
-
-})
-
-
+initSocket(server, allowedOrigins)
 
 
 app.use(cors({
-    origin : ["deployedUrl", "http://localhost:5173"],
+    origin : allowedOrigins,
     credentials : true // allowing browser to request cookies
 }))
 
@@ -71,13 +50,24 @@ app.use("/api/employee", EmployeeRouter)
 app.use("/api/analytics", AnalyticsRouter)
 app.use("/api/chats", ChatRouter)
 
+// used by Render's health check
+app.get("/health", (req, res) => {
+    res.status(200).json({ message : "OK" })
+})
+
+app.use((req, res) => {
+    res.status(404).json({ message : "Route not found" })
+})
+
 
 
 mongoose.connect(process.env.DB_URL)
 .then(() => {
     // addUser("Testing123!", "DemoUser", "demo@something.com", "admin")
     console.log("Database connected")
-
+vice instead of leaving it up without a DB
+    process.exit(1)
+})
     const port = process.env.PORT || 8080
 
     server.listen(port, () => {
@@ -86,7 +76,7 @@ mongoose.connect(process.env.DB_URL)
 })
 .catch((error) => {
     console.log(`DB Connection failed : ${error.message}`)
-})
+    // exit so the host restarts the ser
 
 
 

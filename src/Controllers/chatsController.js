@@ -1,4 +1,4 @@
-const { default: mongoose } = require("mongoose")
+const mongoose = require("mongoose")
 const { Chat } = require("../Models/Chat.Schema")
 const { User } = require("../Models/User.schema")
 const { AppError } = require("../Utils/AppError")
@@ -11,7 +11,7 @@ const getChatsInfo = async(req, res) => {
         _id : {
             $ne : req.user._id
         }
-    })
+    }).select("name email role")
 
     res
     .status(200)
@@ -33,10 +33,10 @@ const getChats = async(req, res) => {
 
     if(!mongoose.Types.ObjectId.isValid(id))
     {
-        throw new AppError(400, "Invalid IO")
+        throw new AppError(400, "Invalid ID")
     }
 
-    const foundCHats = await Chat.find({
+    const foundChats = await Chat.find({
         $or : [
             {
                 sender : req.user._id,
@@ -47,13 +47,13 @@ const getChats = async(req, res) => {
                 receiver : req.user._id
             }
         ]
-    })
+    }).sort({_id : 1})
 
 
     res
     .status(200)
     .json({
-        data : foundCHats
+        data : foundChats
     })
 }
 

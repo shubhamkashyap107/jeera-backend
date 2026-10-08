@@ -6,6 +6,7 @@ const bcrypt = require("bcrypt")
 const jwt = require("jsonwebtoken")
 const { isLoggedIn } = require("../Middlewares/isLoggedIn")
 const { Team } = require("../Models/Team.schema")
+const { cookieOptions } = require("../Utils/cookieOptions")
 
 
 router.post("/login", async(req, res) => {
@@ -40,10 +41,8 @@ router.post("/login", async(req, res) => {
     res
     .status(200)
     .cookie("token", token, {
-        maxAge : 24 * 60 * 60 * 1000,
-        httpOnly : true,
-        sameSite : "strict",
-        // secure : true
+        ...cookieOptions(req),
+        maxAge : 24 * 60 * 60 * 1000
     })
     .json({
         message : "User logged in"
@@ -55,7 +54,8 @@ router.post("/login", async(req, res) => {
 router.post("/logout", (req, res) => {
     res
     .status(200)
-    .clearCookie("token")
+    // must match the options the cookie was set with or browsers keep it
+    .clearCookie("token", cookieOptions(req))
     .json({
         message : "User logged out"
     })
