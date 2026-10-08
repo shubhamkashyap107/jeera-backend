@@ -60,26 +60,6 @@ app.use((req, res) => {
 })
 
 
-
-mongoose.connect(process.env.DB_URL)
-.then(() => {
-    // addUser("Testing123!", "DemoUser", "demo@something.com", "admin")
-    console.log("Database connected")
-vice instead of leaving it up without a DB
-    process.exit(1)
-})
-    const port = process.env.PORT || 8080
-
-    server.listen(port, () => {
-        console.log(`Server Running on port ${port}`)
-    })
-})
-.catch((error) => {
-    console.log(`DB Connection failed : ${error.message}`)
-    // exit so the host restarts the ser
-
-
-
 // Registered synchronously at startup, so it runs after every router above.
 // Express 5 forwards errors thrown in async handlers here automatically.
 app.use((err, req, res, next) => {
@@ -112,5 +92,19 @@ app.use((err, req, res, next) => {
 })
 
 
+mongoose.connect(process.env.DB_URL)
+.then(() => {
+    // addUser("Testing123!", "DemoUser", "demo@something.com", "admin")
+    console.log("Database connected")
 
+    const port = process.env.PORT || 8080
 
+    server.listen(port, () => {
+        console.log(`Server Running on port ${port}`)
+    })
+})
+.catch((error) => {
+    console.log(`DB Connection failed : ${error.message}`)
+    // exit so the host restarts the service instead of leaving it up without a DB
+    process.exit(1)
+})
